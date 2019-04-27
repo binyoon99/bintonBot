@@ -1,11 +1,12 @@
 # 67648
 # NTcxNTQ5MDQyODQ1MTU1MzQ5.XMP0xA.hejIL6W8ZEKmq7X3dIH7qKc_lUM
-#https://discordapp.com/api/oauth2/authorize?client_id=571549042845155349&permissions=0&scope=bot
+# https://discordapp.com/api/oauth2/authorize?client_id=571549042845155349&permissions=0&scope=bot
 # 534878922014457865
 import discord
 import urllib
 from bs4 import BeautifulSoup
-import re
+import requests
+
 
 class MyClient(discord.Client):
     async def on_ready(self):
@@ -17,8 +18,9 @@ class MyClient(discord.Client):
         await client.change_presence(status=discord.Status.online, activity=game)
 
     async def on_message(self, message):
-        #print(f"{message.channel}: {message.author}: {message.author.name}: {message.content}")
-        sentdex_guild = client.get_guild(534878922014457865)
+        # print(f"{message.channel}: {message.author}: {message.author.name}: {message.content}")
+        sentdex_guild = client.get_guild(message.guild.id)
+            # client.get_guild(534878922014457865)
         if message.author.id == self.user.id:
             return
         elif "b!members" == message.content.lower():
@@ -32,22 +34,24 @@ class MyClient(discord.Client):
         elif "b!report" == message.content.lower():
             online = 0
             idle = 0
-            offline =0
+            offline = 0
             for m in sentdex_guild.members:
-                if str(m.status) =="online":
+                if str(m.status) == "online":
                     online += 1
                 if str(m.status) == "offline":
                     offline += 1
                 else:
-                    idle +=1
+                    idle += 1
             await message.channel.send(f"``` Online: {online} \n Indle/Busy/Etc: {idle} \n Offline: {offline}```")
         elif "b!binton" == message.content.lower():
-            file = discord.File("rere.png",filename="rere.png")
-            await message.channel.send("Picture of Binton",file=file)
+            file = discord.File("rere.png", filename="rere.png")
+            await message.channel.send("Picture of Binton", file=file)
         elif "b!help" == message.content.lower():
-            embed = discord.Embed(title="Hello I'm Binton Bot", description="Below you can see all the commands I know. \n If you wish to contact the real Binton add \" Binton#2193\" " )
-            embed.set_footer(text = "testing")
-            embed.set_image(url = "https://imgur.com/t/onepunchman/eBEEniw")
+            embed = discord.Embed(title="Hello I'm Binton Bot",
+                                  description="Below you can see all the commands I know. \n If you wish to contact the real Binton add \"Binton#2193\" \n"
+                                              "\"Sriracha#9529\" helped me make this bot :3")
+
+            embed.set_image(url="https://imgur.com/t/onepunchman/eBEEniw")
             embed.add_field(name="b!owner", value="See owner of the server", inline=False)
             embed.add_field(name="b!members", value="Counts total members in the server", inline=False)
             embed.add_field(name="b!report", value="Display status of all the members", inline=False)
@@ -56,71 +60,30 @@ class MyClient(discord.Client):
             embed.add_field(name="b!def <word>", value="Returns slang defintion of the word", inline=False)
             embed.add_field(name="b!end", value="Binton will die", inline=False)
             await message.channel.send(message.channel, embed=embed)
+
         elif message.content.startswith("b!pic"):
             for member in message.mentions:
                 pfp = member.avatar_url
-                embed=discord.Embed(title=str(member), description='{}, Nice profile picture!'.format(member) , color=0xecce8b)
+                embed = discord.Embed(title=str(member), description='{}, Nice profile picture!'.format(member), color=0xecce8b)
                 embed.set_image(url=(pfp))
             await message.channel.send(message.channel, embed=embed)
+
         elif message.content.startswith("b!def"):
-            word =message.content[6:] 
-            word.replace(" ", "%20")
-            urlOfWord ="https://www.urbandictionary.com/define.php?term=" + word
-            print(urlOfWord)
+            phrase = message.content[6:]
+            err = False
+            print("https://www.urbandictionary.com/define.php?term={}".format(phrase.replace(" ", "%20")))
             try:
-                html = urllib.request.urlopen(urlOfWord)
-                soup = BeautifulSoup(html, "html.parser")
-                
-            
-                for script in soup(["script", "style"]):
-                    script.extract()    
-                text = soup.get_text()
-       
-                lines = (line.strip() for line in text.splitlines())
-                
-                chunks = (phrase.strip() for line in lines for phrase in line.split("  "))
-               
-                text = '\n'.join(chunk for chunk in chunks if chunk)
-                with open("Output.txt", "w",encoding='utf8') as text_file:
-                     text_file.write(text)
+                r = requests.get("https://www.urbandictionary.com/define.php?term={}".format(phrase.replace(" ", "%20")))
+                soup = BeautifulSoup(r.content,features="html.parser")
+                result = soup.find("div", attrs={"class": "meaning"}).text
             except Exception as e:
-                print(str(e))
-            count = 0
-            result = ""
+                phrase = "Error"
+                result = "The phrase you entered was not found!"
+                err = True
 
-            with open("Output.txt", "r",encoding='utf8') as f:
-    
-                for line in f :
-                    if "mug for your mate" in line:
-                        continue 
-                    
-                    if count == 0:
-                        result = result + str(line)
-                        count+=1
-                        continue
-                    sentence = line.lower()
-                    r = re.compile(r'%s' % word, re.I)
-                    m = r.search(sentence)
-                    if m != None:
-                        num = m.start()
-                    
-                    
-                    for ch in line :
-                        if (num!= 0) :
-                            num = num -1
-                            continue
-                        result = result + str(ch)
-                    
-                    if count == 1:
-                        break
-            urlOfWord ="https://www.urbandictionary.com/define.php?term=" + word
-            
-            embed=discord.Embed(title="Urban Dictionary", description=word ,url =urlOfWord, color=0xecce8b)
-            embed.add_field(name=word, value=result, inline=False)
+            embed = discord.Embed(title="Urban Dictionary", color=0xecce8b if not err else 0xff0000)
+            embed.add_field(name=phrase+":", value=result, inline=False)
             await message.channel.send(message.channel, embed=embed)
-       
-                    
-
 
 client = MyClient()
 client.run('NTcxNTQ5MDQyODQ1MTU1MzQ5.XMP0xA.hejIL6W8ZEKmq7X3dIH7qKc_lUM')
