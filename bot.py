@@ -27,8 +27,8 @@ class MyClient(discord.Client):
             await message.channel.send(f"```{sentdex_guild.member_count}```")
         elif "b!owner" == message.content.lower():
             await message.channel.send(f"```{sentdex_guild.owner}```")
-        elif "b!end" == message.content.lower():
-            await client.close()
+        #elif "b!end" == message.content.lower():
+            #await client.close()
         elif message.content.startswith('b!hello'):
             await message.channel.send('Hello {0.author.mention}'.format(message))
         elif "b!report" == message.content.lower():
@@ -51,14 +51,14 @@ class MyClient(discord.Client):
                                   description="Below you can see all the commands I know. \n If you wish to contact the real Binton add \"Binton#2193\" \n"
                                               "\"Sriracha#9529\" helped me make this bot :3")
 
-            embed.set_image(url="https://imgur.com/t/onepunchman/eBEEniw")
+            embed.set_image(url="https://imgur.com/a/CdtikKf")
             embed.add_field(name="b!owner", value="See owner of the server", inline=False)
             embed.add_field(name="b!members", value="Counts total members in the server", inline=False)
             embed.add_field(name="b!report", value="Display status of all the members", inline=False)
             embed.add_field(name="b!binton", value="Shows brief description of Binton", inline=False)
             embed.add_field(name="b!pic <@user>", value="Returns profile of a user", inline=False)
             embed.add_field(name="b!def <word>", value="Returns slang defintion of the word", inline=False)
-            embed.add_field(name="b!end", value="Binton will die", inline=False)
+            embed.add_field(name="b!end", value="Temporarily Unavailable", inline=False)
             await message.channel.send(message.channel, embed=embed)
 
         elif message.content.startswith("b!pic"):
@@ -71,7 +71,7 @@ class MyClient(discord.Client):
         elif message.content.startswith("b!def"):
             phrase = message.content[6:]
             err = False
-            print("https://www.urbandictionary.com/define.php?term={}".format(phrase.replace(" ", "%20")))
+            #print("https://www.urbandictionary.com/define.php?term={}".format(phrase.replace(" ", "%20")))
             try:
                 r = requests.get("https://www.urbandictionary.com/define.php?term={}".format(phrase.replace(" ", "%20")))
                 soup = BeautifulSoup(r.content,features="html.parser")
