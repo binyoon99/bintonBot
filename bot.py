@@ -44,7 +44,7 @@ class MyClient(discord.Client):
                     idle += 1
             await message.channel.send(f"``` Online: {online} \n Indle/Busy/Etc: {idle} \n Offline: {offline}```")
         elif "b!binton" == message.content.lower():
-            file = discord.File("rere.png", filename="rere.png")
+            file = discord.File("rere.jpg", filename="rere.jpg")
             await message.channel.send("Picture of Binton", file=file)
         elif "b!help" == message.content.lower():
             embed = discord.Embed(title="Hello I'm Binton Bot",
@@ -75,7 +75,7 @@ class MyClient(discord.Client):
             try:
                 r = requests.get("https://www.urbandictionary.com/define.php?term={}".format(phrase.replace(" ", "%20")))
                 soup = BeautifulSoup(r.content,features="html.parser")
-                result = soup.find("div", attrs={"class": "meaning"}).text
+                result = soup.find("div", attrs={"class": "meaning"}).text.replace("&apos","\'")
             except Exception as e:
                 phrase = "Error"
                 result = "The phrase you entered was not found!"
