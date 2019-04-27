@@ -17,7 +17,7 @@ class MyClient(discord.Client):
         await client.change_presence(status=discord.Status.online, activity=game)
 
     async def on_message(self, message):
-        print(f"{message.channel}: {message.author}: {message.author.name}: {message.content}")
+        #print(f"{message.channel}: {message.author}: {message.author.name}: {message.content}")
         sentdex_guild = client.get_guild(534878922014457865)
         if message.author.id == self.user.id:
             return
@@ -48,7 +48,7 @@ class MyClient(discord.Client):
             embed = discord.Embed(title="Hello I'm Binton Bot", description="Below you can see all the commands I know. \n If you wish to contact the real Binton add \" Binton#2193\" " )
             embed.set_footer(text = "testing")
             embed.set_image(url = "https://imgur.com/t/onepunchman/eBEEniw")
-            embed.add_field(name="b!onwer", value="See onwer of the server", inline=False)
+            embed.add_field(name="b!owner", value="See owner of the server", inline=False)
             embed.add_field(name="b!members", value="Counts total members in the server", inline=False)
             embed.add_field(name="b!report", value="Display status of all the members", inline=False)
             embed.add_field(name="b!binton", value="Shows brief description of Binton", inline=False)
@@ -64,7 +64,9 @@ class MyClient(discord.Client):
             await message.channel.send(message.channel, embed=embed)
         elif message.content.startswith("b!def"):
             word =message.content[6:] 
+            word.replace(" ", "%20")
             urlOfWord ="https://www.urbandictionary.com/define.php?term=" + word
+            print(urlOfWord)
             try:
                 html = urllib.request.urlopen(urlOfWord)
                 soup = BeautifulSoup(html, "html.parser")
@@ -99,7 +101,8 @@ class MyClient(discord.Client):
                     sentence = line.lower()
                     r = re.compile(r'%s' % word, re.I)
                     m = r.search(sentence)
-                    num = m.start()
+                    if m != None:
+                        num = m.start()
                     
                     
                     for ch in line :
