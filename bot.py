@@ -1,3 +1,4 @@
+
 # 67648
 # NTcxNTQ5MDQyODQ1MTU1MzQ5.XMP0xA.hejIL6W8ZEKmq7X3dIH7qKc_lUM
 # https://discordapp.com/api/oauth2/authorize?client_id=571549042845155349&permissions=0&scope=bot
@@ -27,8 +28,8 @@ class MyClient(discord.Client):
             await message.channel.send(f"```{sentdex_guild.member_count}```")
         elif "b!owner" == message.content.lower():
             await message.channel.send(f"```{sentdex_guild.owner}```")
-        #elif "b!end" == message.content.lower():
-            #await client.close()
+        elif "b!end" == message.content.lower():
+            await client.close()
         elif message.content.startswith('b!hello'):
             await message.channel.send('Hello {0.author.mention}'.format(message))
         elif "b!report" == message.content.lower():
@@ -51,7 +52,7 @@ class MyClient(discord.Client):
                                   description="Below you can see all the commands I know. \n If you wish to contact the real Binton add \"Binton#2193\" \n"
                                               "\"Sriracha#9529\" helped me make this bot :3")
 
-            embed.set_image(url="https://imgur.com/a/CdtikKf")
+            embed.set_image(url="https://i.imgur.com/JUV5pEs.jpg")
             embed.add_field(name="b!owner", value="See owner of the server", inline=False)
             embed.add_field(name="b!members", value="Counts total members in the server", inline=False)
             embed.add_field(name="b!report", value="Display status of all the members", inline=False)
@@ -71,7 +72,7 @@ class MyClient(discord.Client):
         elif message.content.startswith("b!def"):
             phrase = message.content[6:]
             err = False
-            #print("https://www.urbandictionary.com/define.php?term={}".format(phrase.replace(" ", "%20")))
+            url ="https://www.urbandictionary.com/define.php?term={}".format(phrase.replace(" ", "%20"))
             try:
                 r = requests.get("https://www.urbandictionary.com/define.php?term={}".format(phrase.replace(" ", "%20")))
                 soup = BeautifulSoup(r.content,features="html.parser")
@@ -81,9 +82,39 @@ class MyClient(discord.Client):
                 result = "The phrase you entered was not found!"
                 err = True
 
-            embed = discord.Embed(title="Urban Dictionary", color=0xecce8b if not err else 0xff0000)
-            embed.add_field(name=phrase+":", value=result, inline=False)
+            embed = discord.Embed(title="Urban Dictionary : "+ phrase,description = result, inline = False ,url = url,  color=0xecce8b if not err else 0xff0000)
+            #embed.add_field(name=phrase+":", value=result, inline=False)
+            print(url)
             await message.channel.send(message.channel, embed=embed)
+        elif message.content.startswith("b!song"):
+            name = message.content[7:]
+            err2 = False
+            try :
+                b = requests.get("https://www.lyrics.com/lyrics/{}".format(name.replace(" ","%20")))
+                soup2 = BeautifulSoup (b.content,features="html.parser")
+                resultSet = soup2.find_all("div",{"class":"sec-lyric clearfix"})
+                counter = 1
+                embed = discord.Embed(title="Find song by lyric: ", description = "\" "+ name+"\"", inline = False ,  color=0xecce8b if not err2 else 0xff0000)
+                for i in resultSet :
+                    blah = i.text.replace("&apos","'")
+                    nameOfSong = blah.split("\n")[2]
+                    artist = blah.split("\n")[3]
+                    embed.add_field(name = str(counter)+". "+nameOfSong ,value = "by artist:   "+artist, inline= False)
+                    if counter == 3 :
+                        break
+
+                    counter = counter +1
+            except Exception as e:
+                name = "Error"
+                artist = e
+                print(e)
+                err2 = True
+            #nameOfSong = result2.split("\n")[2]
+            #artist = result2.split("\n")[3]
+            #print(type(result2))
+           
+            #embed.add_field(name = "1. "+nameOfSong +" by artist ",value = artist, inline= False)
+            await message.channel.send(message.channel, embed= embed)
 
 client = MyClient()
 client.run('NTcxNTQ5MDQyODQ1MTU1MzQ5.XMP0xA.hejIL6W8ZEKmq7X3dIH7qKc_lUM')
