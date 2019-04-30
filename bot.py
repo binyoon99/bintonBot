@@ -1,4 +1,3 @@
-
 # 67648
 # NTcxNTQ5MDQyODQ1MTU1MzQ5.XMP0xA.hejIL6W8ZEKmq7X3dIH7qKc_lUM
 # https://discordapp.com/api/oauth2/authorize?client_id=571549042845155349&permissions=0&scope=bot
@@ -8,13 +7,36 @@ import urllib
 from bs4 import BeautifulSoup
 import requests
 
+result,phrase,url,err = "","","",False
+
+def extractData(command, message):
+    global result, phrase, err, url
+    definition = command.startswith("b!def")
+    phrase = message.content[(6 if definition else 7):]
+    err = False
+    url = ("https://www.urbandictionary.com/define.php?term={}" if definition else "https://www.lyrics.com/lyrics/{}").format(phrase.replace(" ", "%20"))
+    try:
+        r = requests.get(url)
+        soup = BeautifulSoup(r.content, features="html.parser")
+        result = soup.find("div", attrs={"class": "meaning"}).text.replace("&apos", "\'") if definition else soup.find_all("div", {"class": "sec-lyric clearfix"})
+        embed = discord.Embed(title=("Urban Dictionary: " if definition else "Find song by lyric: ") + phrase,
+                              description=result if definition else None,
+                              inline=False,
+                              color=0xecce8b)
+        if not definition:
+            for idx, val in zip(range(5), result):
+                data = val.text.replace("&pos","\'").split("\n")
+                embed.add_field(name = str(idx+1) + ". " + data[2], value="Artist: " + data[3], inline=False)
+    except Exception as e:
+        embed.title = "Error"
+        embed.description = "The phrase you entered was not found!"
+        embed.color = 0xff0000
+    return embed
 
 class MyClient(discord.Client):
+    global embed
     async def on_ready(self):
-        print('Logged in as')
-        print(self.user.name)
-        print(self.user.id)
-        print('------')
+        print("Logged in as: {}\n{}\n------".format(self.user.name, self.user.id))
         game = discord.Game("with Hyebin")
         await client.change_presence(status=discord.Status.online, activity=game)
 
@@ -22,16 +44,11 @@ class MyClient(discord.Client):
         # print(f"{message.channel}: {message.author}: {message.author.name}: {message.content}")
         sentdex_guild = client.get_guild(message.guild.id)
             # client.get_guild(534878922014457865)
-        if message.author.id == self.user.id:
-            return
-        elif "b!members" == message.content.lower():
-            await message.channel.send(f"```{sentdex_guild.member_count}```")
-        elif "b!owner" == message.content.lower():
-            await message.channel.send(f"```{sentdex_guild.owner}```")
-        elif "b!end" == message.content.lower():
-            await client.close()
-        elif message.content.startswith('b!hello'):
-            await message.channel.send('Hello {0.author.mention}'.format(message))
+        if message.author.id == self.user.id: return
+        elif "b!members" == message.content.lower(): await message.channel.send(f"```{sentdex_guild.member_count}```")
+        elif "b!owner" == message.content.lower(): await message.channel.send(f"```{sentdex_guild.owner}```")
+        elif "b!end" == message.content.lower(): await client.close()
+        elif message.content.startswith('b!hello'): await message.channel.send('Hello {0.author.mention}'.format(message))
         elif "b!report" == message.content.lower():
             online = 0
             idle = 0
@@ -50,7 +67,7 @@ class MyClient(discord.Client):
         elif "b!help" == message.content.lower():
             embed = discord.Embed(title="Hello I'm Binton Bot",
                                   description="Below you can see all the commands I know. \n If you wish to contact the real Binton add \"Binton#2193\" \n"
-                                              "\"Sriracha#9529\" helped me make this bot :3")
+                                              "If you wish to contact Sriracha add \"Sriracha#9529\" he helped make this bot :3")
 
             embed.set_image(url="https://i.imgur.com/JUV5pEs.jpg")
             embed.add_field(name="b!owner", value="See owner of the server", inline=False)
@@ -61,62 +78,17 @@ class MyClient(discord.Client):
             embed.add_field(name="b!def <word>", value="Returns slang defintion of the word", inline=False)
             embed.add_field(name="b!song <lyric>", value="Looking for songs by the lyrics ", inline=False)
             embed.add_field(name="b!end", value="Temporarily Unavailable", inline=False)
-           
-            await message.channel.send(message.channel, embed=embed)
+
+            await message.channel.send(embed=embed)
 
         elif message.content.startswith("b!pic"):
             for member in message.mentions:
-                pfp = member.avatar_url
                 embed = discord.Embed(title=str(member), description='{}, Nice profile picture!'.format(member), color=0xecce8b)
-                embed.set_image(url=(pfp))
-            await message.channel.send(message.channel, embed=embed)
+                embed.set_image(url=(member.avatar_url))
+            await message.channel.send(embed=embed)
 
-        elif message.content.startswith("b!def"):
-            phrase = message.content[6:]
-            err = False
-            url ="https://www.urbandictionary.com/define.php?term={}".format(phrase.replace(" ", "%20"))
-            try:
-                r = requests.get("https://www.urbandictionary.com/define.php?term={}".format(phrase.replace(" ", "%20")))
-                soup = BeautifulSoup(r.content,features="html.parser")
-                result = soup.find("div", attrs={"class": "meaning"}).text.replace("&apos","\'")
-            except Exception as e:
-                phrase = "Error"
-                result = "The phrase you entered was not found!"
-                err = True
-
-            embed = discord.Embed(title="Urban Dictionary : "+ phrase,description = result, inline = False ,url = url,  color=0xecce8b if not err else 0xff0000)
-            #embed.add_field(name=phrase+":", value=result, inline=False)
-            print(url)
-            await message.channel.send(message.channel, embed=embed)
-        elif message.content.startswith("b!song"):
-            name = message.content[7:]
-            err2 = False
-            try :
-                b = requests.get("https://www.lyrics.com/lyrics/{}".format(name.replace(" ","%20")))
-                soup2 = BeautifulSoup (b.content,features="html.parser")
-                resultSet = soup2.find_all("div",{"class":"sec-lyric clearfix"})
-                counter = 1
-                embed = discord.Embed(title="Find song by lyric: ", description = "\" "+ name+"\"", inline = False ,  color=0xecce8b if not err2 else 0xff0000)
-                for i in resultSet :
-                    blah = i.text.replace("&apos","'")
-                    nameOfSong = blah.split("\n")[2]
-                    artist = blah.split("\n")[3]
-                    embed.add_field(name = str(counter)+". "+nameOfSong ,value = "by artist:   "+artist, inline= False)
-                    if counter == 3 :
-                        break
-
-                    counter = counter +1
-            except Exception as e:
-                name = "Error"
-                artist = e
-                print(e)
-                err2 = True
-            #nameOfSong = result2.split("\n")[2]
-            #artist = result2.split("\n")[3]
-            #print(type(result2))
-           
-            #embed.add_field(name = "1. "+nameOfSong +" by artist ",value = artist, inline= False)
-            await message.channel.send(message.channel, embed= embed)
+        elif message.content.startswith("b!def") or message.content.startswith("b!song"):
+            await message.channel.send(embed=extractData(message.content, message))
 
 client = MyClient()
 client.run('NTcxNTQ5MDQyODQ1MTU1MzQ5.XMP0xA.hejIL6W8ZEKmq7X3dIH7qKc_lUM')
