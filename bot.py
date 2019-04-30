@@ -59,7 +59,9 @@ class MyClient(discord.Client):
             embed.add_field(name="b!binton", value="Shows brief description of Binton", inline=False)
             embed.add_field(name="b!pic <@user>", value="Returns profile of a user", inline=False)
             embed.add_field(name="b!def <word>", value="Returns slang defintion of the word", inline=False)
+            embed.add_field(name="b!song <lyric>", value="Looking for songs by the lyrics ", inline=False)
             embed.add_field(name="b!end", value="Temporarily Unavailable", inline=False)
+           
             await message.channel.send(message.channel, embed=embed)
 
         elif message.content.startswith("b!pic"):
