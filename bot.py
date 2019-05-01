@@ -34,10 +34,9 @@ def extractData(command, message):
     return embed
 
 class MyClient(discord.Client):
-    global embed
     async def on_ready(self):
         print("Logged in as: {}\n{}\n------".format(self.user.name, self.user.id))
-        game = discord.Game("with Hyebin")
+        game = discord.Game("with Hyebin and Deep")
         await client.change_presence(status=discord.Status.online, activity=game)
 
     async def on_message(self, message):
@@ -54,12 +53,9 @@ class MyClient(discord.Client):
             idle = 0
             offline = 0
             for m in sentdex_guild.members:
-                if str(m.status) == "online":
-                    online += 1
-                if str(m.status) == "offline":
-                    offline += 1
-                else:
-                    idle += 1
+                if str(m.status) == "online": online += 1
+                elif str(m.status) == "offline": offline += 1
+                else: idle += 1
             await message.channel.send(f"``` Online: {online} \n Indle/Busy/Etc: {idle} \n Offline: {offline}```")
         elif "b!binton" == message.content.lower():
             file = discord.File("rere.jpg", filename="rere.jpg")
@@ -76,7 +72,8 @@ class MyClient(discord.Client):
             embed.add_field(name="b!binton", value="Shows brief description of Binton", inline=False)
             embed.add_field(name="b!pic <@user>", value="Returns profile of a user", inline=False)
             embed.add_field(name="b!def <word>", value="Returns slang defintion of the word", inline=False)
-            embed.add_field(name="b!song <lyric>", value="Looking for songs by the lyrics ", inline=False)
+            embed.add_field(name="b!song <lyric>", value="Looking for songs by the lyrics", inline=False)
+            embed.add_field(name="b!lyrics <song>/<artist>", value="Finds the lyrics for the song by the artist", inline=False)
             embed.add_field(name="b!end", value="Temporarily Unavailable", inline=False)
 
             await message.channel.send(embed=embed)
@@ -89,6 +86,32 @@ class MyClient(discord.Client):
 
         elif message.content.startswith("b!def") or message.content.startswith("b!song"):
             await message.channel.send(embed=extractData(message.content, message))
+
+
+        elif message.content.startswith("b!lyrics"):
+            phrase = message.content[9:].split("/")
+            url = (
+                "https://lyrics.fandom.com/wiki/{}:{}").format(phrase[1].replace(" ", "_"), phrase[0].replace(" ", "_"))
+            print(url)
+            try:
+                r = requests.get(url)
+                soup = BeautifulSoup(r.content, features="html.parser")
+                result = soup.find("div", attrs={"class": "lyricbox"})
+                found = result is not None
+                res = ""
+                if found:
+                    for x in result: res+= str(x).replace("<br/>","")+"\n" if str(x) == "<br/>" else str(x)
+                embed = discord.Embed(title=("Lyrics for song: {}".format(phrase[0]) if found else "This song was not found"),
+                                      description=res.replace('<div class="lyricsbreak"></div>',"") if found else None,
+                                      inline=False,
+                                      color=0xecce8b if found else 0xff0000)
+            except Exception as e:
+                embed.title = "Error"
+                embed.description = "The song you entered was not found!"
+                embed.color = 0xff0000
+
+            await message.channel.send(embed=embed)
+
 
 client = MyClient()
 client.run('NTcxNTQ5MDQyODQ1MTU1MzQ5.XMP0xA.hejIL6W8ZEKmq7X3dIH7qKc_lUM')
